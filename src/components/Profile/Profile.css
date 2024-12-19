@@ -1,0 +1,48 @@
+.profile {
+  padding: 20px;
+}
+
+.profile h2 {
+  text-align: center;
+}
+
+.profile-info,
+.profile-addresses,
+.profile-orders {
+  margin-bottom: 20px;
+}
+
+.profile-addresses ul,
+.profile-orders ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.profile-addresses li,
+.profile-orders li {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.profile .address-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.profile select {
+  padding: 5px;
+}
+
+.profile button {
+  background-color: #ff4565;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.profile button:hover {
+  background-color: #ff1234;
+}
