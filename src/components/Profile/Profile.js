@@ -1,52 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../SignUp/useAuth';
-import { db } from '../../firebaseConfig'; // Import Firestore
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { collection, getDocs, query, where, orderBy, doc, updateDoc } from 'firebase/firestore';
 import './Profile.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faBriefcase, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 
 const Profile = () => {
-  const { user } = useAuth();
-  const [addresses, setAddresses] = useState([]);
+  const { user, setUser } = useAuth();
   const [orderHistory, setOrderHistory] = useState([]);
-  const [newTag, setNewTag] = useState('Home');
-  const [newAddress, setNewAddress] = useState('');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Default to current month
 
-  useEffect(() => {
-    if (user) {
-      fetchAddresses();
-      fetchOrderHistory();
-    }
-  }, [user]);
-
-  const fetchAddresses = async () => {
+  const fetchOrderHistory = useCallback(async () => {
     if (user && user.uid) {
-      const addressesCollection = collection(db, 'users', user.uid, 'addresses');
-      const addressesSnapshot = await getDocs(addressesCollection);
-      const addressesList = addressesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAddresses(addressesList);
-    }
-  };
-
-  const fetchOrderHistory = async () => {
-    if (user && user.uid) {
-      const ordersCollection = collection(db, 'users', user.uid, 'orders');
-      const ordersSnapshot = await getDocs(ordersCollection);
+      const ordersCollection = collection(db, 'orders');
+      const q = query(ordersCollection, where('userId', '==', user.uid), orderBy('date', 'desc'));
+      const ordersSnapshot = await getDocs(q);
       const ordersList = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setOrderHistory(ordersList);
     }
-  };
+  }, [user]);
 
-  const addAddress = async () => {
-    if (newTag && newAddress && user && user.uid) {
-      const addressesCollection = collection(db, 'users', user.uid, 'addresses');
-      await addDoc(addressesCollection, { tag: newTag, address: newAddress });
-      fetchAddresses();
-      setNewTag('Home');
-      setNewAddress('');
+  useEffect(() => {
+    if (user) {
+      fetchOrderHistory();
+    }
+  }, [user, fetchOrderHistory]);
+
+  const updatePhone = async () => {
+    if (phone && user && user.uid) {
+      const userDoc = doc(db, 'users', user.uid);
+      await updateDoc(userDoc, { phone });
+      setUser(prevUser => ({ ...prevUser, phone }));
     }
   };
+
+  const handleMonthChange = (event) => {
+    setSelectedMonth(parseInt(event.target.value));
+  };
+
+  const filteredOrders = orderHistory.filter(order => {
+    const orderDate = new Date(order.date);
+    return orderDate.getMonth() + 1 === selectedMonth;
+  });
 
   return (
     <div className="profile">
@@ -55,42 +50,49 @@ const Profile = () => {
         <h3>Account Information</h3>
         <p>Email: {user?.email}</p>
         <p>Name: {user?.name}</p>
-      </div>
-      <div className="profile-addresses">
-        <h3>Addresses</h3>
-        <ul>
-          {addresses.map(address => (
-            <li key={address.id}>
-              <strong>{address.tag}:</strong> {address.address}
-            </li>
-          ))}
-        </ul>
-        <div className="address-input">
-          <select value={newTag} onChange={(e) => setNewTag(e.target.value)}>
-            <option value="Home">Home</option>
-            <option value="Work">Work</option>
-            <option value="Other">Other</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Address"
-            value={newAddress}
-            onChange={(e) => setNewAddress(e.target.value)}
-          />
-          <button onClick={addAddress}>Add Address</button>
-        </div>
+        <p>Phone: {user?.phone}</p>
+        {!user?.phone && (
+          <>
+            <input
+              type="text"
+              placeholder="Phone Number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+            <button onClick={updatePhone}>Update Phone</button>
+          </>
+        )}
       </div>
       <div className="profile-orders">
         <h3>Order History</h3>
-        <ul>
-          {orderHistory.map(order => (
-            <li key={order.id}>
-              <strong>Date:</strong> {order.date}
-              <ul>
-                {order.items.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
+        <div className="month-filter">
+          <label htmlFor="month">Select Month: </label>
+          <select id="month" value={selectedMonth} onChange={handleMonthChange}>
+            {[...Array(12).keys()].map(month => (
+              <option key={month + 1} value={month + 1}>
+                {new Date(0, month).toLocaleString('default', { month: 'long' })}
+              </option>
+            ))}
+          </select>
+        </div>
+        <ul className="order-list">
+          {filteredOrders.map(order => (
+            <li key={order.id} className="order-item">
+              <div className="order-header">
+                <div className="order-info">
+                  <strong>Order ID:</strong> {order.orderId}
+                  <ul className="order-items">
+                    {order.items.map((item, index) => (
+                      <li key={index}>{item.name} - {item.quantity} x ${item.price.toFixed(2)}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="order-meta">
+                  <span className="order-date">{new Date(order.date).toLocaleString()}</span>
+                  <span className={`order-status ${order.status ? order.status.toLowerCase() : ''}`}>{order.status}</span>
+                  <p><strong>Total:</strong> ${order.total.toFixed(2)}</p>
+                </div>
+              </div>
             </li>
           ))}
         </ul>

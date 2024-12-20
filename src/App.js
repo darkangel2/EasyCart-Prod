@@ -21,23 +21,20 @@ import SearchResult from './components/SearchResult/SearchResult';
 import Cart from './components/Cart/Cart'; // Import Cart component
 import Profile from './components/Profile/Profile'; // Import Profile component
 
-
 function App() {
-
-  const [cart, setCart] = useState([])
+  const [cart, setCart] = useState([]);
 
   const cartHandler = currentFood => {
-
-    const alreadyAdded = cart.find(item => item.id === currentFood.id)
+    const alreadyAdded = cart.find(item => item.id === currentFood.id);
 
     if (alreadyAdded) {
-      const reamingCarts = cart.filter(item => cart.id !== currentFood)
+      const reamingCarts = cart.filter(item => item.id !== currentFood.id);
       setCart(reamingCarts);
     } else {
-      const newCart = [...cart, currentFood]
+      const newCart = [...cart, currentFood];
       setCart(newCart);
     }
-  }
+  };
 
   const [deliveryDetails, setDeliveryDetails] = useState({
     toDoor: "Delivery To Door",
@@ -48,7 +45,7 @@ function App() {
 
   const deliveryDetailsHandler = data => {
     setDeliveryDetails(data);
-  }
+  };
 
   const checkOutItemHandler = (foodID, foodQuantity) => {
     const newCart = cart.map(item => {
@@ -56,58 +53,44 @@ function App() {
         item.quantity = foodQuantity;
       }
       return item;
-    })
+    });
 
-    const filteredCart = newCart.filter(item => item.quantity > 0)
-    setCart(filteredCart)
-  }
+    const filteredCart = newCart.filter(item => item.quantity > 0);
+    setCart(filteredCart);
+  };
 
   const clearCart = () => {
     setCart([]);
-  }
+  };
 
   return (
     <AuthProvider>
       <Router>
         <Switch>
-
           <Route exact path="/">
-            <Header
-              cart={cart}
-            />
+            <Header cart={cart} />
             <Banner />
-            <Foods
-              cart={cart}
-            />
+            <Foods cart={cart} />
             <Blog />
             <Footer />
           </Route>
 
-          <Route path='/food/:id'>
-            <Header
-              cart={cart}
-            />
-            <FoodDetails
-              cart={cart}
-              cartHandler={cartHandler}
-            />
+          <Route path="/food/:id">
+            <Header cart={cart} />
+            <FoodDetails cart={cart} cartHandler={cartHandler} />
             <Footer />
           </Route>
 
-          <Route path='/search=:searchQuery'>
-            <Header
-              cart={cart}
-            />
+          <Route path="/search=:searchQuery">
+            <Header cart={cart} />
             <Banner />
             <SearchResult />
             <Blog />
             <Footer />
           </Route>
 
-          <PrivateRoute path='/checkout'>
-            <Header
-              cart={cart}
-            />
+          <PrivateRoute path="/checkout">
+            <Header cart={cart} />
             <Shipment
               cart={cart}
               deliveryDetails={deliveryDetails}
@@ -119,42 +102,30 @@ function App() {
           </PrivateRoute>
 
           <PrivateRoute path="/order-complete">
-            <Header
-              cart={cart}
-            />
-            <OrderComplete
-              deliveryDetails={deliveryDetails}
-            />
+            <Header cart={cart} />
+            <OrderComplete deliveryDetails={deliveryDetails} />
             <Footer />
           </PrivateRoute>
 
-          <PrivateRoute path='/cart'>
-            <Header
-              cart={cart}
-            />
-            <Cart
-              cart={cart}
-              cartHandler={cartHandler}
-            />
+          <PrivateRoute path="/cart" children={<Cart />}>
+            <Header cart={cart} />
+            <Cart cart={cart} cartHandler={cartHandler} />
             <Footer />
           </PrivateRoute>
 
-          <PrivateRoute path='/profile'>
-            <Header
-              cart={cart}
-            />
+          <PrivateRoute path="/profile">
+            <Header cart={cart} />
             <Profile />
             <Footer />
           </PrivateRoute>
 
-          <Route path='/signup' render={(props) => (
+          <Route path="/signup" render={(props) => (
             <SignUp {...props} defaultReturningUser={props.location.state?.defaultReturningUser || false} />
           )} />
 
           <Route path="*">
             <NotFound />
           </Route>
-
         </Switch>
       </Router>
     </AuthProvider>

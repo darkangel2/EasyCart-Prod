@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
 import Logo from '../../images/background.png';
-import userPhoto from '../../images/ICON/Group 2.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCartArrowDown } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../SignUp/useAuth';

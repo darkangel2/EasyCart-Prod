@@ -2,29 +2,62 @@ import React, { useEffect } from 'react';
 import './Shipment.css';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { db } from '../../firebaseConfig';
+import { collection, addDoc } from 'firebase/firestore';
+import { useAuth } from '../SignUp/useAuth'; // Import useAuth
 
 const Shipment = (props) => {
+    const { user } = useAuth(); // Get the user from useAuth
 
     useEffect(() => {
-        window.scrollTo(0, 0)
-    }, [])
-
-    const { toDoor, road, flat, businessName, address } = props.deliveryDetails;
+        window.scrollTo(0, 0);
+        console.log('User in Shipment component:', user); // Debugging log
+    }, [user]);
 
     const { register, handleSubmit, errors } = useForm();
-    const onSubmit = data => props.deliveryDetailsHandler(data);
+    const onSubmit = async data => {
+        await props.deliveryDetailsHandler(data);
+        await saveOrder();
+    };
 
     const subTotal = props.cart.reduce((acc, crr) => {
         return acc + (crr.price * crr.quantity);
-    }, 0)
+    }, 0);
 
     const totalQuantity = props.cart.reduce((acc, crr) => {
         return acc + crr.quantity;
-    }, 0)
+    }, 0);
 
     const tax = (subTotal / 100) * 5;
     const deliveryFee = totalQuantity && 2;
     const grandTotal = subTotal + tax + deliveryFee;
+
+    const sendAddressViaWhatsApp = () => {
+        const phoneNumber = '1234567890'; // Replace with your WhatsApp number
+        const message = `Delivery Details:\nTotal: $${grandTotal.toFixed(2)}\nPlease send your address location.`;
+        const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    };
+
+    const generateOrderId = () => {
+        return 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    };
+
+    const saveOrder = async () => {
+        if (user && user.uid) {
+            const order = {
+                orderId: generateOrderId(),
+                userId: user.uid,
+                items: props.cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
+                total: grandTotal,
+                date: new Date().toISOString(),
+                status: 'Pending'
+            };
+            await addDoc(collection(db, 'orders'), order);
+        } else {
+            console.error('User is not authenticated');
+        }
+    };
 
     return (
         <div className="shipment container my-5">
@@ -33,81 +66,13 @@ const Shipment = (props) => {
                     <h4>Edit Delivery Details</h4>
                     <hr />
                     <form onSubmit={handleSubmit(onSubmit)} className="py-5">
-
-                        <div className="form-group">
-                            <input
-                                name="toDoor"
-                                className="form-control"
-                                ref={register({ required: true })}
-                                defaultValue={toDoor}
-                                placeholder="Delivery To Door"
-                            />
-                            {
-                                errors.toDoor && <span className="error">This Option is required</span>
-                            }
-                        </div>
-
-                        <div className="form-group">
-                            <input
-                                name="road"
-                                className="form-control"
-                                ref={register({ required: true })}
-                                defaultValue={road}
-                                placeholder="Road No"
-                            />
-                            {
-                                errors.road && <span className="error">Road No is required</span>
-                            }
-                        </div>
-
-                        <div className="form-group">
-                            <input
-                                name="flat"
-                                className="form-control"
-                                ref={register({ required: true })}
-                                defaultValue={flat}
-                                placeholder="Flat, Suite or Floor"
-                            />
-                            {
-                                errors.flat && <span className="error">Flat, Suite or Floor is required</span>
-                            }
-                        </div>
-
-                        <div className="form-group">
-                            <input
-                                name="businessName"
-                                className="form-control"
-                                ref={register({ required: true })}
-                                defaultValue={businessName}
-                                placeholder="Business name"
-                            />
-                            {
-                                errors.businessName && <span className="error">Business name is required</span>
-                            }
-                        </div>
-
-                        <div className="form-group">
-                            <textarea
-                                name="address"
-                                ref={register({ required: true })}
-                                defaultValue={address}
-                                placeholder="Address"
-                                className="form-control"
-                                cols="30"
-                                rows="2"
-                            >
-                            </textarea>
-                            {
-                                errors.address && <span className="error">Password is required</span>
-                            }
-                        </div>
-
                         <div className="form-group">
                             <button
-                                className="btn btn-danger btn-block"
-                                type="submit"
+                                className="btn btn-success btn-block"
+                                type="button"
+                                onClick={sendAddressViaWhatsApp}
                             >
-                                Save & Continue
+                                Send Address via WhatsApp
                             </button>
                         </div>
                     </form>
@@ -193,22 +158,17 @@ const Shipment = (props) => {
 
                         {
                             totalQuantity ?
-                                toDoor && road && flat && businessName && address ?
-                                    <Link to="/order-complete">
-                                        <button
-                                            onClick={() => props.clearCart()}
-                                            className="btn btn-block btn-danger"
-                                        >
-                                            Check Out Your Food
-                                    </button>
-                                    </Link>
-                                    :
+                                <Link to="/order-complete">
                                     <button
-                                        disabled className="btn btn-block btn-secondary"
+                                        onClick={() => {
+                                            props.clearCart();
+                                            saveOrder();
+                                        }}
+                                        className="btn btn-block btn-danger"
                                     >
                                         Check Out Your Food
                                     </button>
-
+                                </Link>
                                 :
                                 <button
                                     disabled className="btn btn-block btn-secondary"
