@@ -1,0 +1,23 @@
+{
+  "files": {
+    "main.css": "/darkangel2/EasyCart-Prod/static/css/main.2d9e0540.css",
+    "main.js": "/darkangel2/EasyCart-Prod/static/js/main.108679fd.js",
+    "static/media/blog3.png": "/darkangel2/EasyCart-Prod/static/media/blog3.450b2da7722246410b5d.png",
+    "static/media/blog2.png": "/darkangel2/EasyCart-Prod/static/media/blog2.af2df5de8c3080b484bc.png",
+    "static/media/blog1.png": "/darkangel2/EasyCart-Prod/static/media/blog1.2694c5b77c51223c023e.png",
+    "static/media/map.png": "/darkangel2/EasyCart-Prod/static/media/map.e0810d3dae04de4ef4c3.png",
+    "static/media/bannerbackground.png": "/darkangel2/EasyCart-Prod/static/media/bannerbackground.0f3b87c042dc40563e27.png",
+    "static/media/background.png": "/darkangel2/EasyCart-Prod/static/media/background.53b95b9fd9c710d98bc9.png",
+    "static/media/signup-bg.png": "/darkangel2/EasyCart-Prod/static/media/signup-bg.1bafc9ec14c58b409486.png",
+    "static/media/rider.png": "/darkangel2/EasyCart-Prod/static/media/rider.79a1e10dbba901e493a2.png",
+    "static/media/cart2.jpg": "/darkangel2/EasyCart-Prod/static/media/cart2.9e2bca43c32c641b1526.jpg",
+    "static/media/helmet.png": "/darkangel2/EasyCart-Prod/static/media/helmet.7ac997a6a5b63e1a7b95.png",
+    "index.html": "/darkangel2/EasyCart-Prod/index.html",
+    "main.2d9e0540.css.map": "/darkangel2/EasyCart-Prod/static/css/main.2d9e0540.css.map",
+    "main.108679fd.js.map": "/darkangel2/EasyCart-Prod/static/js/main.108679fd.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2d9e0540.css",
+    "static/js/main.108679fd.js"
+  ]
+}
